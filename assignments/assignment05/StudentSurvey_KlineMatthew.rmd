@@ -1,0 +1,64 @@
+---
+title: "Student Survey"
+author: "Matthew Kline"
+date: "October 4 2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Code for Covariance
+```{r include=TRUE}
+setwd("C:/Users/Matt Kline/Documents/GitHub/dsc520")
+
+survey <- read.csv("data/student-survey.csv")
+
+cov(survey)
+```
+
+### Question A:
+These calculations help us determine the relationship between the different variables.The larger the value indicates a strong positive correlation, a large negative value indicates a strong negative correlation, and 0 indicates that there is no correlation at all. The most significant correlation we can see from the above data is the positive relation between happiness and Timetv.
+
+### Question B:
+All the data is kept numerically. For Time reading it appears to be in hours per day, for Time on Tv it appears to be in minutes per hour, Happiness appears to be rated from 1 - 100, and gender is 1 or 0 to indicate male or female. For the measurements of time I would consider using the same time intervals, this will provide a more accurate analysis on how the time of reading/tv affects happiness, this change could even affect the covariance report from above. 
+
+### Question C:
+I would choose a pearson correlation, because we are trying to provide a linear relation between 3 different factors to determine how happy some one will be. I believe happiness can be best predicted by the amount of time spent watching tv, with a positive correlation.
+
+## Code for Correlation analysis Question D1-3:
+```{r include=TRUE}
+cor(survey, method = "pearson")
+cor(x = c(survey$Happines, survey$Gender), y = c(survey$TimeTV, survey$TimeReading))
+cor.test(x = c(survey$Happines, survey$Gender), y = c(survey$TimeTV, survey$TimeReading), method = "pearson", conf.level = 0.99)
+```
+
+### Question D4:
+The correlation matrix showed a strong negative correlation between TimeTv and TimeReading, and a positive correlation between Happiness and TimeTv. The other variables did not have a significant correlation between them, which is why I used TimeReading/TimeTv to compare against happiness and gender which resulted in a strong positive correlation.
+
+## Code for correlation coefficient and coefficient of determination
+```{r include=TRUE}
+cor(survey)
+cor(survey)^2
+
+```
+
+### Question E: 
+The Coefficient of Determination tells us the percentage of data points to fall on the line formatted by the regression. As we can see the TimeTv vs TimeReading determination will have 77.98% of the data with in the line.
+
+### Question F:
+Yes, with the coefficient being -0.88 shows the negative correlation where when 1 is high the other will be low. So we could also say that reading more caused student to watch less tv.
+
+## Code for partial correlation
+```{r include= TRUE}
+library(ppcor)
+pcor.test( survey$TimeTV, survey$TimeReading, survey$Happiness)
+reg1 = lm(survey$TimeTV ~survey$Happiness)
+resid1 = resid(reg1)
+reg2 = lm(survey$TimeReading ~survey$Happiness)
+resid2 = resid(reg2)
+cor(resid1,resid2)
+```
+
+### Question G:
+The control variable was Happiness, it resulted in another negative coefficient for reading and tv. My new interpretations are that those who read more than they watch tv tend to be less happy than those who watch more tv over reading. 
