@@ -1,0 +1,154 @@
+---
+title: "Housing"
+author: "Matt Kline"
+date: "10/18/2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Housing Data
+```{r include=TRUE}
+setwd("C:/Users/Matt Kline/Documents/GitHub/dsc520")
+
+library("readxl")
+
+## Load the data
+housing_df <- read_excel("data/week-7-housing.xlsx")
+library(dplyr)
+housing_df <- rename(housing_df, sale_price= "Sale Price", sale_date = "Sale Date")
+housing_df <- select(housing_df, -prop_type, -addr_full, -sitetype, -ctyname, -postalctyn)
+```
+
+### Question A:
+The following attributes, since they have no affect on the sale price statiscally speaking: prop_type, addr-full, sitetype, ctyname, postalctyn.
+
+## Code for Question B:
+```{r include=TRUE}
+basic_model <- lm(sale_price ~ sq_ft_lot - 1, data = housing_df)
+
+multi_model <- lm(sale_price ~ 
+                    sale_date + 
+                    sale_reason + 
+                    building_grade + 
+                    square_feet_total_living + 
+                    bath_3qtr_count + 
+                    year_built + 
+                    year_renovated + 
+                    sq_ft_lot + 
+                    present_use - 1, 
+                  data = housing_df)
+
+```
+
+### Question B:
+I picked these values based off of their correlation values when compared to Sale_price.
+
+## Code for Question C - E:
+```{r include=TRUE}
+summary(basic_model)
+summary(multi_model)
+
+library(lm.beta)
+lm.beta(multi_model)
+
+confint(multi_model, level = 0.90)
+
+```
+
+### Question C:
+The multiple Rsquared value was 0.789 which is close to 1. This shows that it is a strong fit for the data. The original Rsquared was 0.135 which doesn't help us explain the variance like the mutli model can.
+
+### Question D: 
+These Beta Coefficients compare the strength of each individual attribute against the predictive attribute.The larger the beta the stronger the effect it has on our predictive attribute. square_feet_total_living appears to have the largest effect on our model.
+
+### Question E:
+Using these confidence intervals, we can calculate how many data points may fall within a certain range when attempting to use the linear model. In the above confidence intervals, we can expect 90% of our data to fall within those ranges.
+
+## Code for Question F:
+```{r include=TRUE}
+
+library(stats)
+anova(basic_model)
+aov(basic_model)
+anova(multi_model)
+aov(multi_model)
+
+```
+
+## Code for Question G:
+```{r include=TRUE}
+resid_df <- data.frame(standardized_residuals=rstandard(multi_model),
+                 studentized_resisduals=rstudent(multi_model),
+                 df_betas=dfbeta(multi_model),
+                 df_fit=dffits(multi_model),
+                 leverage=hatvalues(multi_model))
+
+
+```
+
+## Code for Question H:
+```{r include=TRUE}
+
+large_residuals <- function(value){
+  if( abs(value) > 2){
+    return(TRUE)
+  }
+  else {
+    return(FALSE)
+  }
+}
+
+resid_df$large_residuals <- sapply(resid_df$standardized_residuals,large_residuals)
+
+```
+
+## Code for Question I:
+```{r include=TRUE}
+
+sum(subset(resid_df, large_residuals == TRUE)$standardized_residuals)
+
+
+```
+
+## Code for Question J:
+```{r include=TRUE}
+
+large_resid <- resid_df[resid_df$large_residuals == 'TRUE',]
+
+```
+
+## Code for Question K:
+```{r include=TRUE}
+library(car)
+cooks.distance(multi_model)
+
+leveragePlots(multi_model)
+
+housing_df2 <- housing_df[,c("sale_price", "building_grade", "square_feet_total_living", "bath_3qtr_count", "sale_reason","year_built", "year_renovated", "sq_ft_lot", "present_use" ) ]
+
+
+cov(housing_df2)
+
+```
+
+## Code for Question L:
+```{r include=TRUE}
+library(lmtest)
+dwtest(formula = multi_model)
+
+```
+
+### Question L:
+We can not reject the hypothesis due to the autocorrelation being less than 0.
+
+## Code for Question N:
+```{r include=TRUE}
+plot(multi_model)
+
+```
+
+
+### Question O:
+Overall our model is unbiased based off of the tests we ran on the model. To further test our model we could run a prediction on sample data and compare it to the real data we have in this model. 
