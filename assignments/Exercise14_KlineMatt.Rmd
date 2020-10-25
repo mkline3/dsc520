@@ -1,0 +1,74 @@
+---
+title: "Exercise 14"
+author: "Matt Kline"
+date: "10/25/2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Reading in Bionary data
+```{r include=TRUE}
+setwd("C:/Users/Matt Kline/Documents/GitHub/dsc520")
+
+library(tidyverse)
+library(caret)
+library(class)
+
+binary_df <- read.csv("data/binary-classifier-data.csv")
+```
+
+## Code for Logistic regresion:
+```{r include=TRUE}
+model <- glm(label ~ x + y , data= binary_df, family= binomial())
+
+summary(model)
+
+set.seed(3456)
+trainIndex <- createDataPartition(binary_df$label, p=0.67 , list=FALSE, times=1)
+
+Train <- binary_df[trainIndex,]
+Test <- binary_df[-trainIndex,]
+
+TrainK <- binary_df[trainIndex,]
+TestK <- binary_df[-trainIndex,]
+
+fit <- glm(label ~ x + y , data=Train , family=binomial())
+summary(fit)
+
+Test$model_prob <- predict(fit, Test, type="response")
+Test <- Test  %>% mutate(model_pred = 1*(model_prob > .53) + 0,
+                         visit_binary = 1*(label == 1) + 0)
+
+Test <- Test %>% mutate(accurate = 1*(model_pred == visit_binary))
+sum(Test$accurate)/nrow(Test)
+
+
+```
+
+### Question A:
+The logistic regression only has an accuracy of 44%
+
+## Code KNN:
+```{r include=TRUE}
+target_category <- binary_df[trainIndex, 1]
+
+test_category <- binary_df[-trainIndex, 1]
+
+
+pr <- knn(TrainK, TestK, cl=target_category, k = 6)
+tab <- table(pr, test_category)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab)
+
+```
+
+### Question B:
+The KNN accuracy is almost double the accuracy of the regression model.
+
+### Question C: 
+The regression model has a different accuracy because KNN compares differently. KNN clumps the data together to make the prediction, the regression model makes its prediction based off of the line of best fit. In some cases linear models won't be accurate because the data is not linear at all. 
+
+

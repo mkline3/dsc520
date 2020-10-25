@@ -1,0 +1,72 @@
+---
+title: "Exercise 13"
+author: "Matt Kline"
+date: "10/25/2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Reading in ThoracicSurgery data
+```{r include=TRUE}
+setwd("C:/Users/Matt Kline/Documents/GitHub/dsc520")
+
+library(foreign)
+library(tidyverse)
+library(caret)
+
+surgery_df <- read.arff("data/ThoraricSurgery.arff")
+
+surgery <- surgery_df
+
+surgery$DGN <- as.numeric(surgery$DGN)
+surgery$PRE6 <- as.numeric(surgery$PRE6)
+surgery$PRE7 <- as.numeric(surgery$PRE7)
+surgery$PRE8 <- as.numeric(surgery$PRE8)
+surgery$PRE9 <- as.numeric(surgery$PRE9)
+surgery$PRE10 <- as.numeric(surgery$PRE10)
+surgery$PRE11 <- as.numeric(surgery$PRE11)
+surgery$PRE14 <- as.numeric(surgery$PRE14)
+surgery$PRE17 <- as.numeric(surgery$PRE17)
+surgery$PRE19 <- as.numeric(surgery$PRE19)
+surgery$PRE25 <- as.numeric(surgery$PRE25)
+surgery$PRE30 <- as.numeric(surgery$PRE30)
+surgery$PRE32 <- as.numeric(surgery$PRE32)
+```
+
+
+## Code for Question A-B:
+```{r include=TRUE}
+model <- glm(Risk1Yr ~ DGN + PRE4 + PRE5 + PRE6 + PRE7 + PRE8 + PRE9 + PRE10 + PRE11 + PRE14 +PRE17 + PRE19 + PRE25 + PRE30 + PRE32 + AGE, data=surgery , family=binomial())
+summary(model)
+
+```
+
+### Question B:
+DGN, PRE9, PRE14, and PRE17 were the most statistically significant predictors on Risk1Yr.
+
+## Code for Question C:
+```{r include=TRUE}
+set.seed(3456)
+trainIndex <- createDataPartition(surgery$Risk1Yr, p=0.67 , list=FALSE, times=1)
+
+Train <- surgery[trainIndex,]
+Test <- surgery[-trainIndex,]
+
+fit <- glm(Risk1Yr ~ DGN + PRE4 + PRE5 + PRE6 + PRE7 + PRE8 + PRE9 + PRE10 + PRE11 + PRE14 +PRE17 + PRE19 + PRE25 + PRE30 + PRE32 + AGE, data=Train , family=binomial())
+summary(fit)
+
+Test$model_prob <- predict(fit, Test, type="response")
+Test <- Test  %>% mutate(model_pred = 1*(model_prob > .53) + 0,
+                         visit_binary = 1*(Risk1Yr == "T") + 0)
+
+Test <- Test %>% mutate(accurate = 1*(model_pred == visit_binary))
+sum(Test$accurate)/nrow(Test)
+
+```
+
+### Question C:
+The accuracy of my model is 81.9%.
+
+
