@@ -1,0 +1,107 @@
+---
+title: "Exercise 15"
+author: "Matt Kline"
+date: "10/31/2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Reading in Bionary/Trinary data
+```{r include=FALSE}
+setwd("C:/Users/Matt Kline/Documents/GitHub/dsc520")
+
+
+library(tidyverse)
+library(caret)
+library(class)
+library(ggplot2)
+
+binary_df <- read.csv("data/binary-classifier-data.csv")
+
+trinary_df <- read.csv("data/trinary-classifier-data.csv")
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+```
+
+## Code Question A plots:
+```{r include=TRUE}
+ggplot(binary_df,aes(x=x,y=y, color=label)) + geom_point() + ggtitle("Binary Data Frame")
+
+ggplot(trinary_df,aes(x=x,y=y, color=label)) + geom_point() + ggtitle("Trinary Data Frame")
+
+
+```
+
+
+## Code Question B KNN and Accuracy Plot:
+```{r include=TRUE}
+
+set.seed(3456)
+trainIndexBi <- createDataPartition(binary_df$label, p=0.67 , list=FALSE, times=1)
+
+trainIndexTri <- createDataPartition(trinary_df$label, p=0.67 , list=FALSE, times=1)
+
+
+TrainBi <- binary_df[trainIndexBi,]
+TestBi <- binary_df[-trainIndexBi,]
+
+TrainTri <- trinary_df[trainIndexTri,]
+TestTri <- trinary_df[-trainIndexTri,]
+
+
+target_categoryBi <- binary_df[trainIndexBi, 1]
+
+test_categoryBi <- binary_df[-trainIndexBi, 1]
+
+target_categoryTri <- trinary_df[trainIndexTri, 1]
+
+test_categoryTri <- trinary_df[-trainIndexTri, 1]
+
+bi3 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 3)
+tabB3 <- table(bi3, test_categoryBi)
+
+bi5 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 5)
+tabB5 <- table(bi5, test_categoryBi)
+
+bi10 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 10)
+tabB10 <- table(bi10, test_categoryBi)
+
+bi15 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 15)
+tabB15 <- table(bi15, test_categoryBi)
+
+bi20 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 20)
+tabB20 <- table(bi20, test_categoryBi)
+
+bi25 <- knn(TrainBi, TestBi, cl=target_categoryBi, k = 25)
+tabB25 <- table(bi25, test_categoryBi)
+
+tri3 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 3)
+tabT3 <- table(tri3, test_categoryTri)
+
+tri5 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 5)
+tabT5 <- table(tri5, test_categoryTri)
+
+tri10 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 10)
+tabT10 <- table(tri10, test_categoryTri)
+
+tri15 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 15)
+tabT15 <- table(tri15, test_categoryTri)
+
+tri20 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 20)
+tabT20 <- table(tri20, test_categoryTri)
+
+tri25 <- knn(TrainTri, TestTri, cl=target_categoryTri, k = 25)
+tabT25 <- table(tri25, test_categoryTri)
+
+
+acc_df = data.frame("K" = c(3,5,10,15,20,25,3,5,10,15,20,25), "Accuracy" = c(accuracy(tabB3),accuracy(tabB5),accuracy(tabB10),accuracy(tabB15),accuracy(tabB20),accuracy(tabB25),accuracy(tabT3),accuracy(tabT5),accuracy(tabT10),accuracy(tabT15),accuracy(tabT20),accuracy(tabT25)),"Data_Set" = c("Binary","Binary","Binary","Binary","Binary","Binary","Trinary","Trinary","Trinary","Trinary","Trinary","Trinary")  )
+
+ggplot(acc_df, aes(x=K,y=Accuracy, color=Data_Set))+ geom_point() + ggtitle("KNN Accuracies")
+
+```
+
+
+### Question C: 
+Looking at the first two plots, I do not believe a linear classifier would be suited for these 2 data sets. As we can see the data is all over the place and a line of best fit would not be able to accuratley capture the different lables of these data sets.
